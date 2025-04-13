@@ -16,17 +16,30 @@ class FirebaseService:
             cls._initialize(cls._instance)
         return cls._instance
 
-    def _initialize(self):
-        try:
-            # Initialize Firebase if not already initialized
-            if not firebase_admin._apps:
-                cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
-                firebase_admin.initialize_app(cred)
-            self.db = firestore.client()
-            logger.info("Firebase initialized successfully")
-        except Exception as e:
-            logger.error(f"Error initializing Firebase: {e}")
-            raise
+    # In your firebase_service.py file
+import json
+import os
+
+def _initialize(self):
+    try:
+         # Check if credentials are provided as an environment variable
+        cred_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
+        if cred_json:
+            # Parse the JSON string from environment variable
+            cred_dict = json.loads(cred_json)
+            # Create a temporary credentials file or use the dictionary directly
+            cred = credentials.Certificate(cred_dict)
+        else:
+            # Fall back to file path
+            cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+
+        if not firebase_admin._apps:
+            firebase_admin.initialize_app(cred)
+        self.db = firestore.client()
+        logger.info("Firebase initialized successfully")
+    except Exception as e:
+        logger.error(f"Error initializing Firebase: {e}")
+        raise
 
     def update_fertilizer_recommendation(self, recommendation, application_method, quantity_recommendation=None):
         """Update the Firestore document with fertilizer recommendation"""
