@@ -1,3 +1,6 @@
 # Credentials
 credentials/*.json
 *.key
+
+# Don't ignore the dataset
+!data/Crop_recommendation.csv
