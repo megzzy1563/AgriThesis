@@ -1,3 +1,5 @@
+import json
+import os
 import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime
@@ -16,24 +18,20 @@ class FirebaseService:
             cls._initialize(cls._instance)
         return cls._instance
 
-    # In your firebase_service.py file
-import json
-import os
-
 def _initialize(self):
     try:
-         # Check if credentials are provided as an environment variable
-        cred_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
-        if cred_json:
-            # Parse the JSON string from environment variable
-            cred_dict = json.loads(cred_json)
-            # Create a temporary credentials file or use the dictionary directly
-            cred = credentials.Certificate(cred_dict)
-        else:
-            # Fall back to file path
-            cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
-
+        # Initialize Firebase if not already initialized
         if not firebase_admin._apps:
+            # First try to read from environment variable
+            cred_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
+            if cred_json:
+                # Parse JSON string from environment variable
+                cred_dict = json.loads(cred_json)
+                cred = credentials.Certificate(cred_dict)
+            else:
+                # Fall back to file path if environment variable not found
+                cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+
             firebase_admin.initialize_app(cred)
         self.db = firestore.client()
         logger.info("Firebase initialized successfully")
