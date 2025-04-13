@@ -1,4 +1,5 @@
 import logging
+import traceback
 from app.models.ml_models import MaizeFertilizerModel
 from app.services.firebase_service import FirebaseService
 from app.utils.data_processing import (
@@ -74,6 +75,5 @@ class PredictionService:
             return response
         except Exception as e:
             logger.error(f"Error in prediction service: {e}")
-            import traceback
             logger.error(traceback.format_exc())
             raise

@@ -3,10 +3,10 @@ from firebase_admin import credentials, firestore
 from datetime import datetime
 import json
 import os
-from app.config import FIREBASE_CREDENTIALS_PATH, FERTILIZER_DOC_ID
-import logging
 import traceback
 from fastapi import HTTPException
+from app.config import FIREBASE_CREDENTIALS_PATH, FERTILIZER_DOC_ID
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -112,16 +112,33 @@ class FirebaseService:
                 logger.error("Firestore client is not initialized")
                 raise Exception("Firestore client is not initialized")
 
+            logger.info(f"Attempting to retrieve document with ID: {FERTILIZER_DOC_ID}")
             doc_ref = self.db.collection("machine-learning-model").document(FERTILIZER_DOC_ID)
             doc = doc_ref.get()
 
             if doc.exists:
+                logger.info(f"Document {FERTILIZER_DOC_ID} exists and was retrieved")
                 rec = doc.to_dict()
                 rec["id"] = doc.id
                 return rec
             else:
-                logger.warning(f"Document {FERTILIZER_DOC_ID} does not exist")
-                return None
+                logger.warning(f"Document {FERTILIZER_DOC_ID} does not exist, creating default document")
+                # Create a default document
+                default_data = {
+                    "fertilizer_type": "No recommendation available",
+                    "fertilizer_application": "Make a prediction to get a recommendation",
+                    "timestamp": datetime.now(),
+                    "npk_status": {
+                        "N": "Unknown",
+                        "P": "Unknown",
+                        "K": "Unknown"
+                    },
+                    "pH_status": "Unknown",
+                    "rainfall_status": "Unknown"
+                }
+                doc_ref.set(default_data)
+                default_data["id"] = FERTILIZER_DOC_ID
+                return default_data
         except Exception as e:
             logger.error(f"Error getting recommendation: {e}")
             logger.error(traceback.format_exc())

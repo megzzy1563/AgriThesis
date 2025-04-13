@@ -82,10 +82,14 @@ async def get_recommendation(
     Get the latest fertilizer recommendation from Firestore
     """
     try:
+        # Add debugging here
+        logger.info("Attempting to get latest recommendation from Firestore")
         result = firebase_service.get_latest_recommendation()
         if result:
+            logger.info("Successfully retrieved recommendation")
             return result
         else:
+            logger.error("No recommendation found")
             raise HTTPException(status_code=404, detail="No recommendation found")
     except Exception as e:
         logger.error(f"Error getting recommendation: {e}")
