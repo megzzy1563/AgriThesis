@@ -31,6 +31,7 @@ class PredictionService:
 
             # Make prediction
             prediction_label = self.model_service.predict(processed_data)
+            logger.info(f"Prediction successful: {prediction_label}")
 
             # Get status information
             pH_status = categorize_ph_maize(sensor_data['ph'])
@@ -44,13 +45,16 @@ class PredictionService:
                 sensor_data,
                 prediction_label
             )
+            logger.info("Quantity recommendation calculated successfully")
 
             # Update Firestore
+            logger.info("Attempting to update Firestore...")
             firestore_response = self.firebase_service.update_fertilizer_recommendation(
                 prediction_label,
                 application_method,
                 quantity_recommendation
             )
+            logger.info(f"Firestore update response: {firestore_response}")
 
             # Create response
             response = {
@@ -70,4 +74,6 @@ class PredictionService:
             return response
         except Exception as e:
             logger.error(f"Error in prediction service: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             raise

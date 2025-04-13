@@ -52,11 +52,20 @@ class FirebaseService:
             # Add quantity recommendation if available
             if quantity_recommendation:
                 # Convert the recommendation to a format that Firestore can store
-                # (Firestore doesn't support nested objects with custom methods)
                 doc_data["quantity_recommendation"] = self._prepare_for_firestore(quantity_recommendation)
 
             doc_ref = self.db.collection("machine-learning-model").document(FERTILIZER_DOC_ID)
-            doc_ref.update(doc_data)
+
+            # Check if document exists
+            doc = doc_ref.get()
+            if doc.exists:
+                # Update existing document
+                doc_ref.update(doc_data)
+                logger.info(f"Updated existing document {FERTILIZER_DOC_ID}")
+            else:
+                # Create new document
+                doc_ref.set(doc_data)
+                logger.info(f"Created new document {FERTILIZER_DOC_ID}")
 
             logger.info(f"Successfully updated fertilizer data in document {FERTILIZER_DOC_ID}")
             return {
@@ -65,7 +74,10 @@ class FirebaseService:
                 "message": "Fertilizer recommendation updated successfully"
             }
         except Exception as e:
-            logger.error(f"Error updating fertilizer data: {e}")
+            logger.error(f"Error updating fertilizer data: {str(e)}")
+            # Log more details about the error
+            import traceback
+            logger.error(traceback.format_exc())
             return {
                 "document_id": FERTILIZER_DOC_ID,
                 "success": False,
