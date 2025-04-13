@@ -1,7 +1,0 @@
-# Credentials
-credentials/
-*.json
-
-# Data files
-data/
-*.csv
