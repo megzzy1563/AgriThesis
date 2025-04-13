@@ -8,6 +8,8 @@ from app.services.prediction_service import PredictionService
 from app.services.firebase_service import FirebaseService
 from app.models.ml_models import MaizeFertilizerModel
 
+app = FastAPI()
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -46,8 +48,8 @@ def get_ml_model_service():
 
 
 @app.get("/")
-async def root():
-    return {"message": "Welcome to Maize Fertilizer Recommendation API"}
+def read_root():
+    return {"Hello": "World"}
 
 
 @app.post("/predict", response_model=PredictionResponse)
