@@ -1,8 +1,8 @@
-import json
-import os
 import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime
+import json
+import os
 from app.config import FIREBASE_CREDENTIALS_PATH, FERTILIZER_DOC_ID
 import logging
 
@@ -18,26 +18,27 @@ class FirebaseService:
             cls._initialize(cls._instance)
         return cls._instance
 
-def _initialize(self):
-    try:
-        # Initialize Firebase if not already initialized
-        if not firebase_admin._apps:
-            # First try to read from environment variable
-            cred_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
-            if cred_json:
-                # Parse JSON string from environment variable
-                cred_dict = json.loads(cred_json)
-                cred = credentials.Certificate(cred_dict)
-            else:
-                # Fall back to file path if environment variable not found
-                cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+    @classmethod
+    def _initialize(cls, instance):
+        try:
+            # Initialize Firebase if not already initialized
+            if not firebase_admin._apps:
+                # First try to read from environment variable
+                cred_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
+                if cred_json:
+                    # Parse JSON string from environment variable
+                    cred_dict = json.loads(cred_json)
+                    cred = credentials.Certificate(cred_dict)
+                else:
+                    # Fall back to file path if environment variable not found
+                    cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
 
-            firebase_admin.initialize_app(cred)
-        self.db = firestore.client()
-        logger.info("Firebase initialized successfully")
-    except Exception as e:
-        logger.error(f"Error initializing Firebase: {e}")
-        raise
+                firebase_admin.initialize_app(cred)
+            instance.db = firestore.client()
+            logger.info("Firebase initialized successfully")
+        except Exception as e:
+            logger.error(f"Error initializing Firebase: {e}")
+            raise
 
     def update_fertilizer_recommendation(self, recommendation, application_method, quantity_recommendation=None):
         """Update the Firestore document with fertilizer recommendation"""
